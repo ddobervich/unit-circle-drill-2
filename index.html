@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Circle Drill</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .main-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .trig-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #4a5568;
+            min-width: 200px;
+        }
+
+        h1 {
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            font-weight: 300;
+        }
+
+        .circle-container {
+            position: relative;
+            margin: 0;
+            width: 300px;
+            height: 300px;
+        }
+
+        #unitCircle {
+            border: 2px solid #e2e8f0;
+            border-radius: 50%;
+            background: #f7fafc;
+        }
+
+        .controls {
+            margin-top: 30px;
+        }
+
+        .choices-container {
+            margin-bottom: 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .choice-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .choice-btn {
+            background: white;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .choice-btn:hover {
+            border-color: #667eea;
+        }
+
+        .choice-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .choice-btn.correct {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .choice-btn.incorrect {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .new-angle-btn {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 15px;
+        }
+
+        .new-angle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(72, 187, 120, 0.3);
+        }
+
+        .new-angle-btn:active {
+            transform: translateY(0);
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 500;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .feedback.neutral {
+            background: #e2e8f0;
+            color: #4a5568;
+            border: 1px solid #cbd5e0;
+        }
+
+        .score {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            color: #4a5568;
+        }
+
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .main-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .circle-container {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .trig-display {
+                font-size: 2rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Unit Circle Drill</h1>
+        
+        <div class="main-content">
+            <div class="circle-container">
+                <canvas id="unitCircle" width="300" height="300"></canvas>
+            </div>
+            <div class="trig-display" id="trigDisplay">
+                sin(θ) = ?
+            </div>
+        </div>
+        
+        <div class="controls">
+            
+            <div class="choices-container" id="choicesContainer">
+                <!-- Choice buttons will be generated here -->
+            </div>
+            
+            <div id="feedback" class="feedback neutral">
+                Choose the radian value of the angle shown!
+            </div>
+            
+            <div class="score">
+                Score: <span id="score">0</span> correct out of <span id="total">0</span> attempts
+            </div>
+            
+            <button class="new-angle-btn" onclick="newAngle()">New Angle</button>
+        </div>
+    </div>
+
+    <script>
+        // Common radian values for the drill
+        const commonRadians = [
+            0, Math.PI/6, Math.PI/4, Math.PI/3, Math.PI/2,
+            2*Math.PI/3, 3*Math.PI/4, 5*Math.PI/6, Math.PI,
+            7*Math.PI/6, 5*Math.PI/4, 4*Math.PI/3, 3*Math.PI/2,
+            5*Math.PI/3, 7*Math.PI/4, 11*Math.PI/6
+        ];
+
+        let currentAngle = 0;
+        let currentTrigFunction = 'sin';
+        let score = 0;
+        let totalAttempts = 0;
+        let hasAnswered = false;
+
+        const canvas = document.getElementById('unitCircle');
+        const ctx = canvas.getContext('2d');
+        const feedback = document.getElementById('feedback');
+        const scoreElement = document.getElementById('score');
+        const totalElement = document.getElementById('total');
+        const choicesContainer = document.getElementById('choicesContainer');
+        const trigDisplay = document.getElementById('trigDisplay');
+
+        function drawUnitCircle(dashedAngles = []) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 120;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw circle
+            ctx.strokeStyle = '#4a5568';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            // Draw axes
+            ctx.strokeStyle = '#a0aec0';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            // X-axis
+            ctx.moveTo(centerX - radius - 20, centerY);
+            ctx.lineTo(centerX + radius + 20, centerY);
+            // Y-axis
+            ctx.moveTo(centerX, centerY - radius - 20);
+            ctx.lineTo(centerX, centerY + radius + 20);
+            ctx.stroke();
+
+            // Draw dashed lines for angles in the correct row
+            if (dashedAngles.length > 0) {
+                ctx.strokeStyle = '#667eea';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]); // Set dashed line pattern
+                
+                dashedAngles.forEach(angle => {
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    const endX = centerX + radius * Math.cos(angle);
+                    const endY = centerY - radius * Math.sin(angle);
+                    ctx.lineTo(endX, endY);
+                    ctx.stroke();
+                });
+                
+                ctx.setLineDash([]); // Reset line dash
+            }
+
+            // Draw angle ray
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            const endX = centerX + radius * Math.cos(currentAngle);
+            const endY = centerY - radius * Math.sin(currentAngle);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+
+            // Draw arc for angle theta
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            const arcRadius = 30;
+            
+            // Draw arc manually to ensure it always goes counterclockwise from 0 to θ
+            const numPoints = Math.max(20, Math.floor(currentAngle * 10)); // More points for larger angles
+            for (let i = 0; i <= numPoints; i++) {
+                const angle = (i / numPoints) * currentAngle;
+                const x = centerX + arcRadius * Math.cos(angle);
+                const y = centerY - arcRadius * Math.sin(angle);
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+
+            // Draw theta label
+            ctx.fillStyle = '#000000';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            const labelAngle = currentAngle / 2;
+            const labelX = centerX + (arcRadius + 15) * Math.cos(labelAngle);
+            const labelY = centerY - (arcRadius + 15) * Math.sin(labelAngle) + 5;
+            ctx.fillText('θ', labelX, labelY);
+
+
+            // Draw coordinate labels
+            ctx.fillStyle = '#4a5568';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('1', centerX + radius + 10, centerY + 5);
+            ctx.fillText('-1', centerX - radius - 10, centerY + 5);
+            ctx.fillText('1', centerX + 5, centerY - radius - 10);
+            ctx.fillText('-1', centerX + 5, centerY + radius + 15);
+        }
+
+        function drawTrigTriangle() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 120;
+
+            // Calculate the endpoint of the angle ray
+            const endX = centerX + radius * Math.cos(currentAngle);
+            const endY = centerY - radius * Math.sin(currentAngle);
+
+            // Calculate the actual x and y coordinates relative to center
+            const cosValue = endX - centerX; // cos(θ) value
+            const sinValue = centerY - endY; // sin(θ) value (flipped because canvas y is inverted)
+
+            // Draw horizontal line for cos(θ) - from center to the x-coordinate of the endpoint
+            // Color based on whether cos(θ) is positive (green) or negative (red)
+            ctx.strokeStyle = cosValue >= 0 ? '#48bb78' : '#e53e3e';
+            if (currentTrigFunction === 'cos') {
+                // Make horizontal line thicker for cos(θ)
+                ctx.lineWidth = 4;
+                ctx.setLineDash([]); // Solid line
+            } else {
+                // Make horizontal line dashed for sin(θ)
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]); // Dashed line
+            }
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(endX, centerY);
+            ctx.stroke();
+
+            // Draw vertical line for sin(θ) - from the x-coordinate to the endpoint
+            // Color based on whether sin(θ) is positive (green) or negative (red)
+            ctx.strokeStyle = sinValue >= 0 ? '#48bb78' : '#e53e3e';
+            if (currentTrigFunction === 'sin') {
+                // Make vertical line thicker for sin(θ)
+                ctx.lineWidth = 4;
+                ctx.setLineDash([]); // Solid line
+            } else {
+                // Make vertical line dashed for cos(θ)
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]); // Dashed line
+            }
+            ctx.beginPath();
+            ctx.moveTo(endX, centerY);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+
+            // Reset line dash for other drawing operations
+            ctx.setLineDash([]);
+
+            // Add label for the trig function that was asked
+            ctx.font = '14px Arial';
+            if (currentTrigFunction === 'sin') {
+                // Show sin(θ) label on the vertical line
+                ctx.fillStyle = '#ed8936';
+                ctx.textAlign = 'left';
+                const sinLabelX = endX + 10;
+                const sinLabelY = centerY - (centerY - endY) / 2;
+                ctx.fillText('sin(θ)', sinLabelX, sinLabelY);
+            } else {
+                // Show cos(θ) label on the horizontal line
+                ctx.fillStyle = '#48bb78';
+                ctx.textAlign = 'center';
+                const cosLabelX = centerX + (endX - centerX) / 2;
+                const cosLabelY = centerY + 20;
+                ctx.fillText('cos(θ)', cosLabelX, cosLabelY);
+            }
+        }
+
+        function formatRadian(radian) {
+            if (radian === 0) return '0';
+            if (radian === Math.PI) return 'π';
+            if (radian === Math.PI/2) return 'π/2';
+            if (radian === Math.PI/3) return 'π/3';
+            if (radian === Math.PI/4) return 'π/4';
+            if (radian === Math.PI/6) return 'π/6';
+            if (radian === 2*Math.PI/3) return '2π/3';
+            if (radian === 3*Math.PI/4) return '3π/4';
+            if (radian === 5*Math.PI/6) return '5π/6';
+            if (radian === 7*Math.PI/6) return '7π/6';
+            if (radian === 5*Math.PI/4) return '5π/4';
+            if (radian === 4*Math.PI/3) return '4π/3';
+            if (radian === 3*Math.PI/2) return '3π/2';
+            if (radian === 5*Math.PI/3) return '5π/3';
+            if (radian === 7*Math.PI/4) return '7π/4';
+            if (radian === 11*Math.PI/6) return '11π/6';
+            return radian.toString();
+        }
+
+        function getTrigValues() {
+            return [
+                { value: 0, display: '0' },
+                { value: 1, display: '1' },
+                { value: -1, display: '-1' },
+                { value: 0.5, display: '1/2' },
+                { value: -0.5, display: '-1/2' },
+                { value: Math.sqrt(2)/2, display: '√2/2' },
+                { value: -Math.sqrt(2)/2, display: '-√2/2' },
+                { value: Math.sqrt(3)/2, display: '√3/2' },
+                { value: -Math.sqrt(3)/2, display: '-√3/2' }
+            ];
+        }
+
+        function createChoiceButtons() {
+            choicesContainer.innerHTML = '';
+            
+            const trigValues = getTrigValues();
+            
+            // Shuffle the values for random order
+            const shuffledValues = [...trigValues].sort(() => Math.random() - 0.5);
+            
+            const row = document.createElement('div');
+            row.className = 'choice-row';
+            
+            shuffledValues.forEach(trigValue => {
+                const button = document.createElement('button');
+                button.className = 'choice-btn';
+                button.textContent = trigValue.display;
+                button.onclick = () => checkAnswer(trigValue.value);
+                row.appendChild(button);
+            });
+            
+            choicesContainer.appendChild(row);
+        }
+
+        function newAngle() {
+            // Randomly choose an angle from common values
+            currentAngle = commonRadians[Math.floor(Math.random() * commonRadians.length)];
+            
+            // Randomly choose sin or cos
+            currentTrigFunction = Math.random() < 0.5 ? 'sin' : 'cos';
+            
+            hasAnswered = false;
+            drawUnitCircle();
+            createChoiceButtons();
+            
+            // Update the trig display
+            trigDisplay.textContent = `${currentTrigFunction}(θ) = ?`;
+            
+            feedback.className = 'feedback neutral';
+            feedback.textContent = `Choose the value of ${currentTrigFunction}(θ)!`;
+        }
+
+        function checkAnswer(selectedValue) {
+            if (hasAnswered) return;
+
+            totalAttempts++;
+            hasAnswered = true;
+
+            // Calculate the correct trig value
+            let correctValue;
+            if (currentTrigFunction === 'sin') {
+                correctValue = Math.sin(currentAngle);
+            } else {
+                correctValue = Math.cos(currentAngle);
+            }
+
+            // Check if answer is correct (with small tolerance for floating point precision)
+            const isCorrect = Math.abs(selectedValue - correctValue) < 0.001;
+
+            // Disable all buttons and highlight the correct/incorrect choice
+            const buttons = choicesContainer.querySelectorAll('.choice-btn');
+            buttons.forEach(button => {
+                button.disabled = true;
+                
+                // Find the value this button represents
+                const trigValues = getTrigValues();
+                const buttonValue = trigValues.find(tv => tv.display === button.textContent)?.value;
+                
+                if (Math.abs(buttonValue - correctValue) < 0.001) {
+                    button.className = 'choice-btn correct';
+                } else if (Math.abs(buttonValue - selectedValue) < 0.001 && !isCorrect) {
+                    button.className = 'choice-btn incorrect';
+                }
+            });
+
+            // Update the trig display to show the answer
+            const trigValues = getTrigValues();
+            const correctDisplay = trigValues.find(tv => Math.abs(tv.value - correctValue) < 0.001)?.display || correctValue.toFixed(3);
+            trigDisplay.textContent = `${currentTrigFunction}(θ) = ${correctDisplay}`;
+
+            // Draw the triangle showing cos(θ) and sin(θ)
+            drawTrigTriangle();
+
+            if (isCorrect) {
+                score++;
+                feedback.className = 'feedback correct';
+                feedback.textContent = `Correct! ${currentTrigFunction}(θ) = ${correctDisplay}`;
+            } else {
+                feedback.className = 'feedback incorrect';
+                feedback.textContent = `Incorrect. ${currentTrigFunction}(θ) = ${correctDisplay}`;
+            }
+
+            updateScore();
+        }
+
+        function updateScore() {
+            scoreElement.textContent = score;
+            totalElement.textContent = totalAttempts;
+        }
+
+
+
+        // Initialize the app
+        newAngle();
+    </script>
+</body>
+</html>
